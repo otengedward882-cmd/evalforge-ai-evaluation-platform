@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: evalforge_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: evalforge_user
+      POSTGRES_PASSWORD: evalforge_password
+      POSTGRES_DB: evalforge_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evalforge_user -d evalforge_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: evalforge_backend
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - PROJECT_NAME=EvalForge
+      - API_V1_STR=/api/v1
+      - DATABASE_URL=postgresql+psycopg2://evalforge_user:evalforge_password@db:5432/evalforge_db
+      - SECRET_KEY=replace-with-a-cryptographically-secure-random-key-in-prod
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - BACKEND_CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: evalforge_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
