@@ -2,7 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from app.core.config import settings
+from app.core.database import Base, engine
 from app.api.v1.api import api_router
+import app.models  # Ensure all SQLAlchemy models are registered
+
+# Initialize database schema tables on startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

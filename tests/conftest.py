@@ -12,6 +12,8 @@ backend_path = Path(__file__).resolve().parent.parent / "backend"
 sys.path.insert(0, str(backend_path))
 
 from app.core.database import Base, get_db
+from app.core.security import create_access_token, get_password_hash
+from app.models.user import User, UserRole
 from app.main import app
 
 # Create in-memory SQLite database for test isolation
@@ -55,3 +57,43 @@ def client(db_session):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def test_admin(db_session) -> User:
+    user = User(
+        email="admin@evalforge.dev",
+        hashed_password=get_password_hash("SuperSecretPassword123!"),
+        full_name="Edward Admin",
+        role=UserRole.ADMIN.value,
+        is_active=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def test_evaluator(db_session, test_admin) -> User:
+    user = User(
+        email="evaluator@evalforge.dev",
+        hashed_password=get_password_hash("EvaluatorPassword123!"),
+        full_name="Sarah Evaluator",
+        role=UserRole.EVALUATOR.value,
+        is_active=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def admin_token(test_admin) -> str:
+    return create_access_token(subject=test_admin.id, role=test_admin.role)
+
+
+@pytest.fixture
+def evaluator_token(test_evaluator) -> str:
+    return create_access_token(subject=test_evaluator.id, role=test_evaluator.role)
