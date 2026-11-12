@@ -51,7 +51,7 @@ def test_upload_valid_jsonl_dataset(client, test_project, test_dataset, evaluato
         files={"file": ("cases.jsonl", file_bytes, "application/jsonl")},
         headers={"Authorization": f"Bearer {evaluator_token}"}
     )
-    assert res.status_code == 200
+    assert res.status_code == 201
     data = res.json()
     assert data["success"] is True
     assert data["total_imported"] == 2
@@ -75,7 +75,7 @@ def test_versioning_and_case_filtering(client, test_project, test_dataset, evalu
         files={"file": ("v1.jsonl", io.BytesIO(content_v1.encode("utf-8")), "application/jsonl")},
         headers={"Authorization": f"Bearer {evaluator_token}"}
     )
-    assert res_v1.status_code == 200
+    assert res_v1.status_code == 201
     assert res_v1.json()["version_number"] == 1
 
     # Upload version 2
@@ -88,7 +88,7 @@ def test_versioning_and_case_filtering(client, test_project, test_dataset, evalu
         files={"file": ("v2.jsonl", io.BytesIO(content_v2.encode("utf-8")), "application/jsonl")},
         headers={"Authorization": f"Bearer {evaluator_token}"}
     )
-    assert res_v2.status_code == 200
+    assert res_v2.status_code == 201
     assert res_v2.json()["version_number"] == 2
 
     # Query dataset to get latest version ID
@@ -121,7 +121,7 @@ def test_upload_valid_csv_dataset(client, test_project, test_dataset, evaluator_
         files={"file": ("data.csv", io.BytesIO(csv_content.encode("utf-8")), "text/csv")},
         headers={"Authorization": f"Bearer {evaluator_token}"}
     )
-    assert res.status_code == 200
+    assert res.status_code == 201
     assert res.json()["total_imported"] == 2
 
 

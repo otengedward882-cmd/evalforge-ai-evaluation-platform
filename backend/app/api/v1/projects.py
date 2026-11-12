@@ -134,7 +134,7 @@ def create_dataset(
     return dataset
 
 
-@router.post("/{project_id}/datasets/{dataset_id}/upload", response_model=ImportResultResponse)
+@router.post("/{project_id}/datasets/{dataset_id}/upload", response_model=ImportResultResponse, status_code=status.HTTP_201_CREATED)
 async def upload_dataset_version(
     project_id: str,
     dataset_id: str,
@@ -215,6 +215,7 @@ async def upload_dataset_version(
     return ImportResultResponse(
         success=True,
         dataset_id=dataset_id,
+        version_id=version.id,
         version_number=next_version,
         total_imported=len(test_cases_to_insert),
         checksum_sha256=parse_result.checksum_sha256,

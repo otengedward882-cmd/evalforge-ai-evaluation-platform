@@ -52,6 +52,7 @@ class DatasetResponse(DatasetBase):
 class ImportResultResponse(BaseModel):
     success: bool
     dataset_id: str
+    version_id: str
     version_number: int
     total_imported: int
     checksum_sha256: str
